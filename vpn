@@ -88,7 +88,7 @@ runMenu () {
 		echo "------------------------------------"
 		list
 		echo
-		read -n 1 -p "Main Menu, Enter (k,o,h,q): " ans;
+		read -n 1 -p "Main Menu, Enter (k,o,r,h,q): " ans;
 		echo
 		echo
 		case $ans in
