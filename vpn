@@ -1,0 +1,110 @@
+#!/bin/bash
+
+INSTALL_DIR="~/vpn"
+CONNECT_COMMAND="$INSTALL_DIR/connect"
+
+list () {
+	echo "Open Connections:"
+	ps -o pid=,command= -C openvpn | sed 's/ openvpn / /' | sed 's/\.ovpn$//g'
+}
+
+printMenu () {
+	echo "------------------------------------"
+	echo "------------------------------------"
+	echo "[O] Open Connection"
+	echo "[K] Kill Open Connection"
+	echo "[R] Restart Connection"
+	echo "[H] Help"
+	echo "[Q] Quit"
+}
+
+restartOpenConnection() {
+	output=($(ps -o command= -C openvpn | sed 's/openvpn / /' | sed 's/\.ovpn$//g'))
+	for NUM in ${!output[*]}
+	do
+		echo " $NUM) ${output[$NUM]}"
+	done
+
+	read -n 1 -p "Enter index: " ans;
+	echo
+
+	if [ "" != "$ans" ]
+	then
+		restartVpn "${output[$ans]}"
+	fi
+}
+
+killOpenConnection () {
+	output=($(ps -o command= -C openvpn | sed 's/openvpn / /' | sed 's/\.ovpn$//g'))
+	for NUM in ${!output[*]}
+	do
+		echo " $NUM) ${output[$NUM]}"
+	done
+
+	read -n 1 -p "Enter index: " ans;
+	echo
+
+	if [ "" != "$ans" ]
+	then
+		killVpn "${output[$ans]}"
+	fi
+}
+
+openConnection() {
+	output=($(find $INSTALL_DIR -name '*.ovpn' | sed -e 's+.*/++g' -e 's/\.ovpn$//g'))
+
+	for NUM in ${!output[*]}
+	do
+		echo " $NUM) ${output[$NUM]}"
+	done
+
+	read -n 1 -p "Enter index: " ans;
+	echo
+
+	if [ "" != "$ans" ]
+	then
+		openVpn "${output[$ans]}"
+	fi
+}
+
+killVpn () {
+	sudo pkill -xf "openvpn $1.ovpn"
+	sleep 2
+}
+
+openVpn () {
+	$CONNECT_COMMAND $INSTALL_DIR $1
+	sleep 2
+}
+
+restartVpn() {
+	killVpn $1
+	openVpn $1
+}
+
+runMenu () {
+	while ( true )
+	do
+		echo "------------------------------------"
+		list
+		echo
+		read -n 1 -p "Main Menu, Enter (k,o,h,q): " ans;
+		echo
+		echo
+		case $ans in
+			o|O)
+				openConnection;;
+			k|K)
+				killOpenConnection;;
+			r|R)
+				restartOpenConnection;;
+			h|H)
+				printMenu;;
+			q|Q)
+				break;;
+		esac
+	done
+}
+
+
+runMenu

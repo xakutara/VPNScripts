@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd $1/$2
+
+sudo openvpn $2.ovpn 2>&1 1>> $2.log &
